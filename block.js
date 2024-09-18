@@ -4,14 +4,28 @@ function getRandomInt(max) {
   return Math.floor(Math.random() * max);
 }
 
+function findIndexOfVectorArray(vectorArray, vector){
+    for (let i = 0; i < vectorArray.length; i += 1){
+        if(vectorArray[i].x == vector.x && 
+            vectorArray[i].y == vector.y &&
+            vectorArray[i].z == vector.z){
+                return i;
+        }
+    }
+
+    return -1;
+}
+
 export class Block {
 
-    constructor(pos, cube){
+    constructor(pos, cube, maxX, maxZ){
         this.pos = pos;
         this.cube = cube;
         this.cube.position.y = this.pos.y;
         this.cube.position.x = this.pos.x;
         this.cube.position.z = this.pos.z;
+        this.maxX = maxX;
+        this.maxZ = maxZ;
     }
 
     get position() {
@@ -34,11 +48,15 @@ export class Block {
             }
         }
 
+        if (potentialCol.length == 9){
+            return;
+        }
+
         // check if something is just under the block
         let canMoveDown = true;
         for (const potentialBlock of potentialCol){
             if (potentialBlock.position.z == this.pos.z && potentialBlock.position.x == this.pos.x){
-                canMoveDown = false;
+                canMoveDown = false;   
                 break;
             }
         }
@@ -50,16 +68,53 @@ export class Block {
 
         // check if there are other possible moves 
 
-        let possibleMoves = [
-            new THREE.Vector3(this.pos.x - 1, this.pos.y - 1, this.pos.z - 1),
-            new THREE.Vector3(this.pos.x + 1, this.pos.y - 1, this.pos.z + 1),
+        const possibleMovesEdges = [
             new THREE.Vector3(this.pos.x, this.pos.y - 1, this.pos.z + 1),
             new THREE.Vector3(this.pos.x, this.pos.y - 1, this.pos.z - 1),
             new THREE.Vector3(this.pos.x + 1, this.pos.y - 1, this.pos.z),
             new THREE.Vector3(this.pos.x - 1, this.pos.y - 1, this.pos.z)
         ]
+
+        const possibleMovesCorners = [
+            new THREE.Vector3(this.pos.x - 1, this.pos.y - 1, this.pos.z - 1),
+            new THREE.Vector3(this.pos.x + 1, this.pos.y - 1, this.pos.z + 1),
+            new THREE.Vector3(this.pos.x - 1, this.pos.y - 1, this.pos.z + 1),
+            new THREE.Vector3(this.pos.x + 1, this.pos.y - 1, this.pos.z - 1),
+        ]
+
         for (const potentialBlock of potentialCol){
-            possibleMoves.splice(possibleMoves.indexOf(potentialBlock.pos), 1)
+            let index = findIndexOfVectorArray(possibleMovesEdges, potentialBlock.position);
+            
+            if (index > -1){
+                possibleMovesEdges.splice(index, 1);
+                continue;
+            }
+
+            index = findIndexOfVectorArray(possibleMovesCorners, potentialBlock.position);
+            if (index > -1){
+                possibleMovesCorners.splice(index, 1);
+            }
+        }
+
+        // remove edges
+        const possibleMoves = []
+        for (let i = 0; i < possibleMovesEdges.length; i += 1){
+            const edge = possibleMovesEdges[i];
+            if (edge.x > 0 || edge.z > 0 ||
+                 edge.x < this.maxX || edge.z < this.maxZ){
+                    continue;
+            }
+            possibleMoves.push(edge);
+        }
+        if (possibleMoves.length == 0){
+            for (let i = 0; i < possibleMovesCorners.length; i += 1){
+                const edge = possibleMovesCorners[i];
+                if (edge.x > 0 || edge.z > 0 ||
+                    edge.x < this.maxX || edge.z < this.maxZ){
+                    continue;
+                }
+                possibleMoves.push(edge);
+            }
         }
 
         if (possibleMoves.length > 0){

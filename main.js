@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { Block } from './block.js';
+import { pressedKeys } from './keyboard.js';
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(
@@ -18,7 +19,6 @@ timer.start();
 scene.add(light)
 camera.position.z = 10;
 camera.position.y = 10;
-camera.position.x = -5;
 camera.rotation.x = -.3
 
 // Function to update the color over time
@@ -37,11 +37,11 @@ function updateColor() {
     return color;
 }
 
-function createBlock(pos, color = {color : updateColor()}){
+function createBlock(pos, maxX, maxZ, color = {color : updateColor()}){
     const geometry = new THREE.BoxGeometry(1, 1, 1);
     const material = new THREE.MeshBasicMaterial(color);
     const cube = new THREE.Mesh(geometry, material);
-    const block = new Block(pos, cube);
+    const block = new Block(pos, cube, maxX, maxZ);
     scene.add(cube);
     return block;
 }
@@ -57,45 +57,63 @@ function createWorld(x, z, maxY, amountOfCubes){
         const posX = -getRandomInt(x);
         const posZ = -getRandomInt(z);
         const position = new THREE.Vector3(posX, maxY, posZ);
-        const newBlock = createBlock(position)
+        const newBlock = createBlock(position, -x, -z)
         allCubes.push(newBlock);
     }
 
     return allCubes;
 }
-const pos = new THREE.Vector3(10, 20, 10)
-const allCubes = createWorld(pos.x, pos.z, pos.y, 30);
-const e = window.Event;
 
-window.onmousemove = function (e) {
-  if (!e) e = window.event;
-  if (e.shiftKey) {
-    const _pos = new THREE.Vector3(
-            -getRandomInt(pos.x),
-            pos.y,
-            -getRandomInt(pos.z)
-        )
-        allCubes.push(createBlock(_pos))
-        console.log('pressed!')
-  }
-  if (e.altKey) {/*alt is down*/}
-  if (e.ctrlKey) {/*ctrl is down*/}
-  if (e.metaKey) {/*cmd is down*/}
+const groundSlider = document.getElementById('groundRange');
+const groundOutput = document.getElementById('groundOutput');
+let pos;
+
+
+function createScene(x, z, oldCubes = []){
+    const maxX = x;
+    const maxZ = z;
+    pos = new THREE.Vector3(maxX, 20, maxZ)
+
+    for (const oldCube of oldCubes){
+        scene.remove(oldCube.cube);
+    }
+
+    const allCubes = createWorld(pos.x, pos.z, pos.y, 30);
+
+    camera.position.x = -pos.x/2;
+    groundSlider.value = maxX;
+    groundOutput.innerHTML = maxX;
+
+    return allCubes;
 }
+
+let allCubes = createScene(20, 20)
+
 
 function animate() {
 	renderer.render( scene, camera );
-    /*if(e.shiftKey){
-        const _pos = new THREE.Vector3(
-            getRandomInt(pos.x),
-            pos.y,
-            getRandomInt(pos.z)
-        )
-        allCubes.push(createBlock(_pos))
-    }
-*/
     for (const cube of allCubes){
         cube.move(allCubes)
     }
+
+    if (pressedKeys[32]){
+        const amount = getRandomInt(20);
+        for (let i = 0; i < amount; i += 1){
+            const _pos = new THREE.Vector3(
+                -getRandomInt(pos.x),
+                pos.y,
+                -getRandomInt(pos.z)
+            )
+            allCubes.push(createBlock(_pos, -pos.x, -pos.z))
+        }
+    }
 }
+
+
 renderer.setAnimationLoop( animate );
+
+
+groundSlider.oninput = function() {
+    groundOutput.innerHTML = this.value;
+    allCubes = createScene(this.value, this.value, allCubes)
+}
