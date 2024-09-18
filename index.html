@@ -23,7 +23,7 @@
 
 <body>
   <div class="panel">
-    <h1>
+    <h1 style="text-align: center;">
       press space to spawn cubes!
     </h1>
     <div class="slidecontainer">
@@ -33,7 +33,16 @@
       <h1 class="output" id="groundOutput">
         40
       </h1>
-      <input type="range" min="1" max="100" value="50" class="slider" id="groundRange">
+      <input type="range" min="10" max="200" value="50" class="slider" id="groundRange">
+    </div>
+    <div class="slidecontainer">
+      <h1>
+        cubes per click
+      </h1>
+      <h1 class="output" id="amountOutput">
+        20
+      </h1>
+      <input type="range" min="1" max="100" value="50" class="slider" id="amountRange">
     </div>
   </div>
   <script type="module" src="/keyboard.js"></script>

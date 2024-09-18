@@ -17,8 +17,7 @@ const timer = new THREE.Clock(true);
 
 timer.start();
 scene.add(light)
-camera.position.z = 10;
-camera.position.y = 10;
+camera.position.y = 15;
 camera.rotation.x = -.3
 
 // Function to update the color over time
@@ -64,10 +63,18 @@ function createWorld(x, z, maxY, amountOfCubes){
     return allCubes;
 }
 
+// UI
 const groundSlider = document.getElementById('groundRange');
 const groundOutput = document.getElementById('groundOutput');
-let pos;
 
+const amountSlider = document.getElementById('amountRange'); 
+const amountOutput = document.getElementById('amountOutput');
+
+let pos;
+let amountPerClick = 20;
+
+amountSlider.value = amountPerClick;
+amountOutput.innerHTML = amountPerClick;
 
 function createScene(x, z, oldCubes = []){
     const maxX = x;
@@ -78,9 +85,10 @@ function createScene(x, z, oldCubes = []){
         scene.remove(oldCube.cube);
     }
 
-    const allCubes = createWorld(pos.x, pos.z, pos.y, 30);
+    const allCubes = createWorld(pos.x, pos.z, pos.y, amountPerClick);
 
     camera.position.x = -pos.x/2;
+    camera.position.z = pos.z/1.5;
     groundSlider.value = maxX;
     groundOutput.innerHTML = maxX;
 
@@ -97,7 +105,7 @@ function animate() {
     }
 
     if (pressedKeys[32]){
-        const amount = getRandomInt(20);
+        const amount = amountPerClick;
         for (let i = 0; i < amount; i += 1){
             const _pos = new THREE.Vector3(
                 -getRandomInt(pos.x),
@@ -116,4 +124,9 @@ renderer.setAnimationLoop( animate );
 groundSlider.oninput = function() {
     groundOutput.innerHTML = this.value;
     allCubes = createScene(this.value, this.value, allCubes)
-}
+};
+
+amountSlider.oninput = function(){
+    amountOutput.innerHTML = this.value;
+    amountPerClick = this.value; 
+};
