@@ -70,6 +70,9 @@ const groundOutput = document.getElementById('groundOutput');
 const amountSlider = document.getElementById('amountRange'); 
 const amountOutput = document.getElementById('amountOutput');
 
+const cameraSlider = document.getElementById('cameraRange');
+const cameraOutput = document.getElementById('cameraOutput');
+
 let pos;
 let amountPerClick = 20;
 
@@ -89,6 +92,11 @@ function createScene(x, z, oldCubes = []){
 
     camera.position.x = -pos.x/2;
     camera.position.z = pos.z/1.5;
+
+    
+cameraSlider.value = Math.round(camera.position.z);
+cameraOutput.innerHTML = Math.round(camera.position.z);
+
     groundSlider.value = maxX;
     groundOutput.innerHTML = maxX;
 
@@ -130,3 +138,11 @@ amountSlider.oninput = function(){
     amountOutput.innerHTML = this.value;
     amountPerClick = this.value; 
 };
+
+cameraSlider.oninput = function(){
+    cameraOutput.innerHTML = this.value;
+    camera.position.z = this.value;
+};
+
+cameraSlider.value = Math.round(camera.position.z);
+cameraOutput.innerHTML = Math.round(camera.position.z);
